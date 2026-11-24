@@ -1,0 +1,35 @@
+# Environment variables & secrets (CRITICAL: Never commit database credentials)
+.env
+*.env
+!.env.example
+
+# Python virtual environment & cache
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+
+# Django local database
+db.sqlite3
+db.sqlite3-journal
+
+# IDE & OS files
+.idea/
+.vscode/
+.DS_Store
+*.swp
+
+# Logs & temp
+*.log
+
+# Sibling projects & archives in this workspace
+hotelpro/
+imovies/
+staffsync/
+*.zip
+package.json
+package-lock.json
+node_modules/

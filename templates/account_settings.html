@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+
+{% block title %}Account Settings - Food Rescue Management System{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--secondary);">⚙️ Account Settings</h2>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">
+        Manage your profile details, update password security, or manage account deletion.
+    </p>
+</div>
+
+<div class="settings-container">
+    <!-- Left Settings Navigation -->
+    <div class="settings-nav">
+        <button type="button" class="settings-nav-item active" onclick="switchTab('profile', this)">
+            <span>👤</span>
+            <span>Update Profile</span>
+        </button>
+        <button type="button" class="settings-nav-item" onclick="switchTab('password', this)">
+            <span>🔑</span>
+            <span>Password Setting</span>
+        </button>
+        <button type="button" class="settings-nav-item danger-tab" onclick="switchTab('delete', this)">
+            <span>⚠️</span>
+            <span>Delete Account</span>
+        </button>
+    </div>
+
+    <!-- Right Settings Panels -->
+    <div>
+        <!-- TAB 1: UPDATE PROFILE -->
+        <div id="tab-profile" class="settings-tab-panel active">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title">Update Account Information</h3>
+                        <div style="font-size: 0.85rem; color: var(--text-muted);">
+                            Keep your contact details up to date for smooth food pickup coordination.
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" action="{% url 'account_settings' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_profile">
+
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label" for="username_disp">Username</label>
+                                <input type="text" class="form-control" id="username_disp" value="{{ user.username }}" disabled 
+                                       style="background: #f1f5f9; cursor: not-allowed;">
+                                <div class="form-help">Username cannot be changed.</div>
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label" for="full_name">Full Name *</label>
+                                <input type="text" class="form-control" id="full_name" name="full_name" 
+                                       value="{{ user.full_name }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label" for="email">Email Address *</label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="{{ user.email }}" required>
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label" for="phone">Phone Number *</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" 
+                                       value="{{ user.phone }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label" for="organization">Organization / Affiliation</label>
+                                <input type="text" class="form-control" id="organization" name="organization" 
+                                       value="{{ user.organization|default:'' }}" 
+                                       placeholder="Restaurant, NGO, Community Kitchen, or Individual">
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label" for="default_role">Default Role Mode</label>
+                                <select class="form-control" id="default_role" name="default_role">
+                                    <option value="provider" {% if user.default_role == 'provider' %}selected{% endif %}>
+                                        Food Provider (I donate surplus food)
+                                    </option>
+                                    <option value="seeker" {% if user.default_role == 'seeker' %}selected{% endif %}>
+                                        Food Seeker (I rescue and collect food)
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="address">Default Address / Location *</label>
+                        <input type="text" class="form-control" id="address" name="address" 
+                               value="{{ user.address }}" required>
+                    </div>
+
+                    <div style="margin-top: 1.5rem;">
+                        <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB 2: PASSWORD SETTING -->
+        <div id="tab-password" class="settings-tab-panel">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title">Change Password</h3>
+                        <div style="font-size: 0.85rem; color: var(--text-muted);">
+                            Update your account password with cryptographic PBKDF2 hashing.
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" action="{% url 'account_settings' %}" style="max-width: 500px;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="change_password">
+
+                    <div class="form-group">
+                        <label class="form-label" for="old_password">Current Password *</label>
+                        <input type="password" class="form-control" id="old_password" name="old_password" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="new_password">New Password *</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password" 
+                               required placeholder="Minimum 6 characters">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="confirm_password">Confirm New Password *</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                               required placeholder="Re-type new password">
+                    </div>
+
+                    <div style="margin-top: 1.5rem;">
+                        <button type="submit" class="btn btn-primary">Update Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB 3: DELETE ACCOUNT -->
+        <div id="tab-delete" class="settings-tab-panel">
+            <div class="card danger-box">
+                <div style="margin-bottom: 1rem;">
+                    <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--danger);">
+                        ⚠️ Delete Account (Danger Zone)
+                    </h3>
+                    <p style="font-size: 0.9rem; color: #7f1d1d; margin-top: 0.25rem;">
+                        Once you delete your account, all your personal data will be permanently wiped from the MongoDB database. Any active food listings will be automatically cancelled. This action cannot be undone.
+                    </p>
+                </div>
+
+                <form method="POST" action="{% url 'account_settings' %}" style="max-width: 480px;" 
+                      onsubmit="return confirm('ARE YOU ABSOLUTELY SURE? Your account will be permanently deleted!');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete_account">
+
+                    <div class="form-group">
+                        <label class="form-label" for="delete_password" style="color: var(--danger);">
+                            Please enter your password to confirm deletion:
+                        </label>
+                        <input type="password" class="form-control" id="delete_password" name="delete_password" 
+                               required placeholder="Enter your current password">
+                    </div>
+
+                    <button type="submit" class="btn btn-danger">
+                        Permanently Delete My Account
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function switchTab(tabId, btnElement) {
+        // Hide all panels
+        document.querySelectorAll('.settings-tab-panel').forEach(function(panel) {
+            panel.classList.remove('active');
+        });
+        // Deactivate all buttons
+        document.querySelectorAll('.settings-nav-item').forEach(function(btn) {
+            btn.classList.remove('active');
+        });
+        // Show target panel
+        const targetPanel = document.getElementById('tab-' + tabId);
+        if (targetPanel) {
+            targetPanel.classList.add('active');
+        }
+        if (btnElement) {
+            btnElement.classList.add('active');
+        }
+    }
+
+    // Auto-open active tab if passed from backend or hash
+    document.addEventListener('DOMContentLoaded', function() {
+        const initialTab = "{{ active_tab|default:'profile' }}";
+        const navBtn = document.querySelector(`.settings-nav-item[onclick*="${initialTab}"]`);
+        if (navBtn) {
+            switchTab(initialTab, navBtn);
+        }
+    });
+</script>
+{% endblock %}

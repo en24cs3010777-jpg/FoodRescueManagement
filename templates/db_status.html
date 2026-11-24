@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Database Diagnostics - Food Rescue Management System{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--secondary);">📊 Database Status & Diagnostics</h2>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">
+        NoSQL MongoDB connection and collection overview (College Project Architecture).
+    </p>
+</div>
+
+<div class="card" style="margin-bottom: 2rem;">
+    <div class="card-header">
+        <h3 class="card-title">Connection Status</h3>
+        {% if status.connected %}
+            <span class="badge badge-available" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">
+                🟢 Connected & Healthy
+            </span>
+        {% else %}
+            <span class="badge badge-cancelled" style="font-size: 0.85rem; padding: 0.35rem 0.75rem; background: var(--danger-bg); color: var(--danger);">
+                🔴 Disconnected
+            </span>
+        {% endif %}
+    </div>
+
+    {% if status.connected %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+            <div class="stat-card" style="margin-bottom: 0;">
+                <div class="stat-label">Database Name</div>
+                <div style="font-size: 1.25rem; font-weight: 700; color: var(--secondary);">{{ status.database_name }}</div>
+            </div>
+            <div class="stat-card" style="margin-bottom: 0;">
+                <div class="stat-label">Users Collection</div>
+                <div class="stat-number">{{ status.users_count }}</div>
+            </div>
+            <div class="stat-card" style="margin-bottom: 0;">
+                <div class="stat-label">Food Items Collection</div>
+                <div class="stat-number">{{ status.food_items_count }}</div>
+            </div>
+            <div class="stat-card" style="margin-bottom: 0;">
+                <div class="stat-label">Claims Collection</div>
+                <div class="stat-number">{{ status.claims_count }}</div>
+            </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+            <strong>Detected Collections:</strong>
+            <ul style="margin: 0.5rem 0 0 1.25rem;">
+                {% for coll in status.collections %}
+                    <li><code>{{ coll }}</code></li>
+                {% empty %}
+                    <li>No collections created yet (will be created automatically on first action).</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        <div class="alert alert-error" style="display: block; font-family: monospace; font-size: 0.85rem;">
+            <strong>Error:</strong> {{ status.error }}
+        </div>
+        <p style="font-size: 0.9rem; color: var(--text-muted);">
+            Please check your <code>.env</code> file or ensure local MongoDB service is running on <code>localhost:27017</code>.
+        </p>
+    {% endif %}
+
+    <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
+        <a href="javascript:location.reload();" class="btn btn-primary btn-sm">🔄 Re-check Status</a>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline btn-sm">&larr; Return to Dashboard</a>
+    </div>
+</div>
+
+<!-- Architecture Info Card for College Viva -->
+<div class="card" style="background: #ffffff;">
+    <h3 class="card-title" style="margin-bottom: 0.75rem;">🎓 College Viva / Project Architecture Notes</h3>
+    <div style="font-size: 0.9rem; color: var(--text-main); line-height: 1.6;">
+        <p style="margin-bottom: 0.5rem;">
+            <strong>Why MongoDB NoSQL for Food Rescue?</strong>
+        </p>
+        <ul style="margin-left: 1.25rem; margin-bottom: 1rem; color: var(--text-muted);">
+            <li><strong>Flexible Schema:</strong> Surplus food items have varying attributes (expiry dates, pickup time slots, allergens, dietary flags, packaging types) which naturally fit document structures without rigid relational table migrations.</li>
+            <li><strong>Atomic Operations:</strong> The food claiming feature leverages MongoDB's <code>find_one_and_update</code> to atomically ensure no two food seekers can claim the same surplus meal concurrently.</li>
+            <li><strong>High Write & Query Speed:</strong> Ideal for real-time location-based searching, filtering by food status, and tracking fast-moving perishable food items.</li>
+        </ul>
+
+        <p style="margin-bottom: 0.5rem;">
+            <strong>MongoDB Collections Schema:</strong>
+        </p>
+        <ul style="margin-left: 1.25rem; color: var(--text-muted); font-family: monospace; font-size: 0.85rem;">
+            <li><strong>users:</strong> _id, username, email, password (PBKDF2 hashed), full_name, phone, default_role (provider/seeker), organization, address, created_at, updated_at</li>
+            <li><strong>food_items:</strong> _id, provider_id, provider_name, provider_phone, title, description, category, food_type, quantity, pickup_address, pickup_city, pickup_time_slot, expiry_info, status (available/claimed/collected/cancelled), claimed_by_id, claimed_at, collected_at, created_at, updated_at</li>
+            <li><strong>claims:</strong> _id, food_id, food_title, provider_id, seeker_id, seeker_name, seeker_phone, status, notes, claimed_at, collected_at</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

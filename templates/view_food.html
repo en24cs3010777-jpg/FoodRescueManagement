@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}View Surplus Food - Food Rescue Management System{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--secondary);">Available Surplus Food</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+            Browse fresh, edible food surplus ready for pickup and rescue.
+        </p>
+    </div>
+    {% if request.session.user_id %}
+        <a href="{% url 'add_food' %}" class="btn btn-primary">➕ List Surplus Food</a>
+    {% endif %}
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="filter-bar">
+    <form method="GET" action="{% url 'view_food' %}" class="filter-form">
+        <div class="filter-input-search">
+            <input type="text" class="form-control" name="q" value="{{ search_query }}" 
+                   placeholder="Search by food name, description, city...">
+        </div>
+
+        <div class="filter-select">
+            <select class="form-control" name="category">
+                {% for cat in categories %}
+                    <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>
+                        Category: {{ cat }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-select">
+            <select class="form-control" name="food_type">
+                {% for ft in food_types %}
+                    <option value="{{ ft }}" {% if selected_food_type == ft %}selected{% endif %}>
+                        Diet: {{ ft }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            {% if search_query or selected_category != 'All' or selected_food_type != 'All' or selected_city %}
+                <a href="{% url 'view_food' %}" class="btn btn-outline" title="Reset Filters">Clear</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+    Showing <strong>{{ total_count }}</strong> available food listing{{ total_count|pluralize }}
+</div>
+
+<!-- Food Grid -->
+{% if food_items %}
+    <div class="food-grid">
+        {% for item in food_items %}
+            <div class="food-card">
+                <div class="food-card-header">
+                    <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+                        <span class="badge badge-category">{{ item.category }}</span>
+                        {% if item.food_type == 'Vegetarian' %}
+                            <span class="badge badge-veg">Veg</span>
+                        {% elif item.food_type == 'Non-Vegetarian' %}
+                            <span class="badge badge-nonveg">Non-Veg</span>
+                        {% else %}
+                            <span class="badge badge-vegan">Vegan</span>
+                        {% endif %}
+                    </div>
+                    <span class="badge badge-qty">{{ item.quantity }}</span>
+                </div>
+
+                <div class="food-card-body">
+                    <h3 class="food-card-title">{{ item.title }}</h3>
+                    <p class="food-desc">{{ item.description|default:"Surplus food prepared hygienically. Available for pickup." }}</p>
+
+                    <ul class="food-info-list">
+                        <li>📍 <span><strong>Location:</strong> {{ item.pickup_city|default:item.pickup_address }}</span></li>
+                        <li>⏰ <span><strong>Time Slot:</strong> {{ item.pickup_time_slot }}</span></li>
+                        <li>⏳ <span><strong>Best Before:</strong> {{ item.expiry_info }}</span></li>
+                        <li>👤 <span><strong>Provider:</strong> {{ item.provider_name }}</span></li>
+                    </ul>
+                </div>
+
+                <div class="food-card-footer">
+                    <span class="badge badge-available">Available</span>
+                    <a href="{% url 'food_detail' item.id %}" class="btn btn-sm btn-primary">
+                        View & Claim &rarr;
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <span class="empty-state-icon">🔍</span>
+        <div class="empty-state-title">No Food Listings Found</div>
+        <p class="empty-state-desc">
+            {% if search_query or selected_category != 'All' or selected_food_type != 'All' %}
+                No available listings match your search criteria. Try clearing filters or searching for something else.
+            {% else %}
+                There are currently no surplus food listings available. Check back soon or list surplus food if you have extra meals!
+            {% endif %}
+        </p>
+        {% if search_query or selected_category != 'All' or selected_food_type != 'All' %}
+            <a href="{% url 'view_food' %}" class="btn btn-outline">Clear All Filters</a>
+        {% else %}
+            {% if request.session.user_id %}
+                <a href="{% url 'add_food' %}" class="btn btn-primary">➕ Add Food Listing</a>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Database Connection Required - Food Rescue{% endblock %}
+
+{% block content %}
+<div class="form-card" style="max-width: 680px; text-align: left;">
+    <div style="text-align: center; font-size: 3rem; margin-bottom: 0.5rem;">🔌</div>
+    <h2 class="form-title" style="color: var(--danger);">MongoDB Connection Not Detected</h2>
+    <p class="form-subtitle">
+        The application is configured to store all user and food data in a <strong>MongoDB NoSQL Database</strong>, but could not establish a connection.
+    </p>
+
+    <div class="alert alert-error" style="display: block; font-family: monospace; font-size: 0.85rem; word-break: break-all;">
+        <strong>Error Details:</strong><br>
+        {{ error }}
+    </div>
+
+    {% if 'TLSV1_ALERT_INTERNAL_ERROR' in error or 'SSL handshake failed' in error or 'tlsv1 alert internal error' in error %}
+        <div style="background: #eff6ff; border: 2px solid #3b82f6; border-radius: var(--radius-md); padding: 1.25rem; margin: 1.5rem 0;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <span style="font-size: 1.5rem;">🌐</span>
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: #1e40af;">
+                    MongoDB Atlas Firewall Detected (IP Not Whitelisted)
+                </h3>
+            </div>
+            <p style="font-size: 0.95rem; color: #1e3a8a; line-height: 1.5; margin-bottom: 0.75rem;">
+                MongoDB Atlas drops connections with <code>TLSV1_ALERT_INTERNAL_ERROR</code> when your current internet IP address is not on the Atlas <strong>Network Access</strong> list.
+            </p>
+            <div style="background: #ffffff; border: 1px solid #bfdbfe; border-radius: var(--radius-sm); padding: 0.85rem; font-size: 0.9rem;">
+                <strong>Quick Fix in MongoDB Atlas (Takes 30 seconds):</strong>
+                <ol style="margin: 0.5rem 0 0 1.25rem; color: #1e293b; line-height: 1.6;">
+                    <li>Open <strong><a href="https://cloud.mongodb.com" target="_blank" rel="noopener">cloud.mongodb.com</a></strong> in your browser.</li>
+                    <li>In the left sidebar under <strong>Security</strong>, click <strong>Network Access</strong>.</li>
+                    <li>Click the green <strong>"Add IP Address"</strong> button.</li>
+                    <li>Click <strong>"Allow Access from Anywhere"</strong> (this enters <code>0.0.0.0/0</code> so dynamic mobile/Wi-Fi IPs never get blocked).</li>
+                    <li>Click <strong>"Confirm"</strong> and wait ~30 seconds for the status to turn <strong>Active</strong>.</li>
+                    <li>Refresh this page!</li>
+                </ol>
+            </div>
+        </div>
+    {% endif %}
+
+    <div style="margin: 1.5rem 0;">
+        <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--secondary); margin-bottom: 0.5rem;">
+            Alternative Options:
+        </h4>
+
+        <div style="background: var(--bg-page); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem; font-size: 0.9rem;">
+            <strong>Option 1: Start Local MongoDB (Default port 27017)</strong>
+            <ul style="margin: 0.5rem 0 0 1.25rem;">
+                <li>If installed via Homebrew on Mac: <code>brew services start mongodb/brew/mongodb-community</code></li>
+                <li>Or run directly: <code>mongod --dbpath ~/data/db</code></li>
+                <li>Then set <code>MONGO_URI=mongodb://localhost:27017/</code> in <code>.env</code>.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
+        <a href="javascript:location.reload();" class="btn btn-primary btn-lg">🔄 Retry Connection</a>
+        <a href="{% url 'db_status' %}" class="btn btn-outline btn-lg">View DB Diagnostics</a>
+    </div>
+</div>
+{% endblock %}

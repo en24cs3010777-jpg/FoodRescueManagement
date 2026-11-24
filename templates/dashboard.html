@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Food Rescue Management System{% endblock %}
+
+{% block content %}
+<!-- Welcome & Mode Selector Banner -->
+<div class="mode-banner">
+    <div class="mode-info">
+        <div class="mode-icon">
+            {% if active_mode == 'provider' %}🍲{% else %}🤝{% endif %}
+        </div>
+        <div class="mode-text">
+            <h3>
+                Active Mode: 
+                {% if active_mode == 'provider' %}
+                    <span style="color: var(--primary);">Food Provider</span>
+                {% else %}
+                    <span style="color: var(--info);">Food Seeker</span>
+                {% endif %}
+            </h3>
+            <p>
+                {% if active_mode == 'provider' %}
+                    You are in Provider mode to donate and manage surplus food items.
+                {% else %}
+                    You are in Seeker mode to find, claim, and collect edible food.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Mode Switcher Controls -->
+    <div>
+        <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.35rem; text-align: right;">
+            Specify Active Mode:
+        </div>
+        <div class="mode-switcher-group">
+            <a href="{% url 'switch_mode' 'provider' %}" class="mode-switch-btn {% if active_mode == 'provider' %}active{% endif %}">
+                🍲 Provide Food
+            </a>
+            <a href="{% url 'switch_mode' 'seeker' %}" class="mode-switch-btn {% if active_mode == 'seeker' %}active{% endif %}">
+                🤝 Seek Food
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 4 Core Navigation / Feature Tiles -->
+<div class="actions-grid">
+    <div class="action-tile">
+        <div class="action-tile-icon">➕</div>
+        <h4>Add Food</h4>
+        <p>List extra food from banquets, restaurants, stores, or households with pickup details.</p>
+        <a href="{% url 'add_food' %}" class="btn btn-sm btn-primary">Add Surplus Food &rarr;</a>
+    </div>
+
+    <div class="action-tile">
+        <div class="action-tile-icon">🔍</div>
+        <h4>View Food</h4>
+        <p>Explore all available food donations across categories with city and diet filters.</p>
+        <a href="{% url 'view_food' %}" class="btn btn-sm btn-outline-primary">Browse Listings &rarr;</a>
+    </div>
+
+    <div class="action-tile">
+        <div class="action-tile-icon">📦</div>
+        <h4>Collect / Manage Food</h4>
+        <p>
+            {% if active_mode == 'provider' %}
+                Manage your posted listings, monitor claims, and confirm handovers.
+            {% else %}
+                Track claimed meals, see pickup instructions, and confirm collections.
+            {% endif %}
+        </p>
+        {% if active_mode == 'provider' %}
+            <a href="{% url 'my_listings' %}" class="btn btn-sm btn-secondary">My Listings ({{ total_listings_count }}) &rarr;</a>
+        {% else %}
+            <a href="{% url 'my_claims' %}" class="btn btn-sm btn-secondary">My Claims ({{ total_claims_count }}) &rarr;</a>
+        {% endif %}
+    </div>
+
+    <div class="action-tile">
+        <div class="action-tile-icon">⚙️</div>
+        <h4>Account Settings</h4>
+        <p>Update personal profile, change security password, or manage account deletion.</p>
+        <a href="{% url 'account_settings' %}" class="btn btn-sm btn-outline">Account Settings &rarr;</a>
+    </div>
+</div>
+
+<!-- Mode-Specific Summary Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">{{ stats.stat_1_label }}</div>
+        <div class="stat-number">{{ stats.stat_1_val }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">{{ stats.stat_2_label }}</div>
+        <div class="stat-number" style="color: var(--warning);">{{ stats.stat_2_val }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">{{ stats.stat_3_label }}</div>
+        <div class="stat-number" style="color: var(--info);">{{ stats.stat_3_val }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">{{ stats.stat_4_label }}</div>
+        <div class="stat-number" style="color: var(--primary);">{{ stats.stat_4_val }}</div>
+    </div>
+</div>
+
+<!-- Provider Mode View: Recent Listings -->
+{% if active_mode == 'provider' %}
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">My Recent Food Listings</h3>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">Food you posted for donation</div>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="{% url 'add_food' %}" class="btn btn-sm btn-primary">➕ Post New Food</a>
+                <a href="{% url 'my_listings' %}" class="btn btn-sm btn-outline">View All ({{ total_listings_count }})</a>
+            </div>
+        </div>
+
+        {% if recent_listings %}
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Food Item</th>
+                            <th>Category</th>
+                            <th>Quantity</th>
+                            <th>Status</th>
+                            <th>Claimed By</th>
+                            <th>Posted On</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in recent_listings %}
+                            <tr>
+                                <td>
+                                    <strong>{{ item.title }}</strong>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);">
+                                        📍 {{ item.pickup_city|default:item.pickup_address }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-category">{{ item.category }}</span>
+                                    {% if item.food_type == 'Vegetarian' %}
+                                        <span class="badge badge-veg">Veg</span>
+                                    {% elif item.food_type == 'Non-Vegetarian' %}
+                                        <span class="badge badge-nonveg">Non-Veg</span>
+                                    {% else %}
+                                        <span class="badge badge-vegan">Vegan</span>
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ item.quantity }}</strong></td>
+                                <td>
+                                    {% if item.status == 'available' %}
+                                        <span class="badge badge-available">Available</span>
+                                    {% elif item.status == 'claimed' %}
+                                        <span class="badge badge-claimed">Claimed (Pending Pickup)</span>
+                                    {% elif item.status == 'collected' %}
+                                        <span class="badge badge-collected">Collected / Rescued</span>
+                                    {% else %}
+                                        <span class="badge badge-cancelled">{{ item.status|title }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.claimed_by_name %}
+                                        <strong>{{ item.claimed_by_name }}</strong>
+                                        <div style="font-size: 0.8rem; color: var(--text-muted);">📞 {{ item.claimed_by_phone }}</div>
+                                    {% else %}
+                                        <span style="color: var(--text-light);">&mdash;</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.created_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    <div style="display: flex; gap: 0.35rem;">
+                                        <a href="{% url 'food_detail' item.id %}" class="btn btn-sm btn-outline">View</a>
+                                        {% if item.status == 'claimed' %}
+                                            <form method="POST" action="{% url 'mark_collected' item.id %}" style="display: inline;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-primary" title="Confirm Handover">Mark Collected</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <span class="empty-state-icon">🍲</span>
+                <div class="empty-state-title">No Food Listings Posted Yet</div>
+                <p class="empty-state-desc">You have not listed any surplus food yet. Have extra meals or groceries? Post a listing now to prevent food waste!</p>
+                <a href="{% url 'add_food' %}" class="btn btn-primary">➕ Add Your First Food Item</a>
+            </div>
+        {% endif %}
+    </div>
+
+<!-- Seeker Mode View: Active Claims and Available Food -->
+{% else %}
+    <!-- Active Claims Section -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">My Recent Claims & Rescues</h3>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">Food you claimed for pickup</div>
+            </div>
+            <a href="{% url 'my_claims' %}" class="btn btn-sm btn-outline">View All Claims ({{ total_claims_count }})</a>
+        </div>
+
+        {% if recent_claims %}
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Food Item</th>
+                            <th>Quantity</th>
+                            <th>Pickup Location</th>
+                            <th>Provider Contact</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in recent_claims %}
+                            <tr>
+                                <td>
+                                    <strong>{{ item.title }}</strong>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);">Slot: {{ item.pickup_time_slot }}</div>
+                                </td>
+                                <td><strong>{{ item.quantity }}</strong></td>
+                                <td>{{ item.pickup_address }}</td>
+                                <td>
+                                    <strong>{{ item.provider_name }}</strong>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);">📞 {{ item.provider_phone }}</div>
+                                </td>
+                                <td>
+                                    {% if item.status == 'claimed' %}
+                                        <span class="badge badge-claimed">Pending Pickup</span>
+                                    {% elif item.status == 'collected' %}
+                                        <span class="badge badge-collected">Collected</span>
+                                    {% else %}
+                                        <span class="badge badge-cancelled">{{ item.status|title }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 0.35rem;">
+                                        <a href="{% url 'food_detail' item.id %}" class="btn btn-sm btn-outline">Details</a>
+                                        {% if item.status == 'claimed' %}
+                                            <form method="POST" action="{% url 'mark_collected' item.id %}" style="display: inline;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-primary">Confirm Pickup</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <span class="empty-state-icon">🤝</span>
+                <div class="empty-state-title">No Claimed Food Yet</div>
+                <p class="empty-state-desc">You have not claimed any surplus food items yet. Browse available food items below and claim meals for your community!</p>
+                <a href="{% url 'view_food' %}" class="btn btn-primary">🔍 Browse Available Food</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Available Food Preview for Seeker -->
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">Available Food Ready For Rescue</h3>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">Recently listed items near you</div>
+            </div>
+            <a href="{% url 'view_food' %}" class="btn btn-sm btn-primary">View All Available Food &rarr;</a>
+        </div>
+
+        {% if available_food_preview %}
+            <div class="food-grid">
+                {% for item in available_food_preview %}
+                    <div class="food-card">
+                        <div class="food-card-header">
+                            <div>
+                                <span class="badge badge-category">{{ item.category }}</span>
+                                {% if item.food_type == 'Vegetarian' %}
+                                    <span class="badge badge-veg">Veg</span>
+                                {% elif item.food_type == 'Non-Vegetarian' %}
+                                    <span class="badge badge-nonveg">Non-Veg</span>
+                                {% else %}
+                                    <span class="badge badge-vegan">Vegan</span>
+                                {% endif %}
+                            </div>
+                            <span class="badge badge-qty">{{ item.quantity }}</span>
+                        </div>
+                        <div class="food-card-body">
+                            <h4 class="food-card-title">{{ item.title }}</h4>
+                            <p class="food-desc">{{ item.description|default:"No description provided." }}</p>
+                            <ul class="food-info-list">
+                                <li>📍 <span>{{ item.pickup_city|default:item.pickup_address }}</span></li>
+                                <li>⏰ <span>{{ item.pickup_time_slot }}</span></li>
+                                <li>⏳ <span>{{ item.expiry_info }}</span></li>
+                            </ul>
+                        </div>
+                        <div class="food-card-footer">
+                            <span class="badge badge-available">Available</span>
+                            <a href="{% url 'food_detail' item.id %}" class="btn btn-sm btn-primary">View & Claim &rarr;</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <span class="empty-state-icon">✅</span>
+                <div class="empty-state-title">All Food Currently Rescued!</div>
+                <p class="empty-state-desc">There are no surplus listings available right now. Check back shortly as providers post new items frequently.</p>
+            </div>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

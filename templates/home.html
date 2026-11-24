@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Food Rescue Management System - Home{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;">
+        College Project &bull; Zero Hunger Initiative
+    </div>
+    <h1 class="hero-title">
+        Connecting <span class="hero-highlight">Surplus Food</span> to People in Need
+    </h1>
+    <p class="hero-subtitle">
+        A decentralized food rescue management system empowering food providers to donate surplus meals and helping food seekers rescue edible food before it goes to waste.
+    </p>
+    <div class="hero-actions">
+        <a href="{% url 'signup' %}" class="btn btn-primary btn-lg">Get Started / Sign Up</a>
+        <a href="{% url 'view_food' %}" class="btn btn-outline btn-lg">Browse Available Food</a>
+        <a href="{% url 'login' %}" class="btn btn-secondary btn-lg">Sign In</a>
+    </div>
+</section>
+
+<!-- Impact Metrics Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Available Listings</div>
+        <div class="stat-number">{{ stats.available_food }}</div>
+        <span style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem;">Fresh meals waiting for rescue</span>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Meals Rescued</div>
+        <div class="stat-number">{{ stats.rescued_food }}</div>
+        <span style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem;">Rescued from going to landfill</span>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Community Members</div>
+        <div class="stat-number">{{ stats.active_users }}</div>
+        <span style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem;">Registered providers & seekers</span>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Database Technology</div>
+        <div class="stat-number" style="font-size: 1.5rem; color: var(--secondary);">MongoDB</div>
+        <span style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem;">Scalable NoSQL document store</span>
+    </div>
+</div>
+
+<!-- Two Core Roles Section -->
+<div style="text-align: center; margin: 3rem 0 1.5rem 0;">
+    <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--secondary); margin-bottom: 0.5rem;">
+        Two Roles, One Seamless Platform
+    </h2>
+    <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto;">
+        Whether you have extra food or want to rescue meals for your community, our unified portal makes it effortless.
+    </p>
+</div>
+
+<div class="actions-grid">
+    <!-- Provider Card -->
+    <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🍲</div>
+            <h3 style="font-size: 1.35rem; font-weight: 700; color: var(--secondary); margin-bottom: 0.5rem;">
+                Food Providers
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">
+                Ideal for restaurants, mess halls, wedding venues, caterers, grocery stores, and households with extra edible food.
+            </p>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                <li>✔️ Quick surplus listing with quantity & pickup times</li>
+                <li>✔️ Track real-time claims and pickup statuses</li>
+                <li>✔️ Reduce food disposal costs and environmental footprint</li>
+            </ul>
+        </div>
+        <a href="{% url 'signup' %}" class="btn btn-outline-primary btn-full">Register as Provider</a>
+    </div>
+
+    <!-- Seeker Card -->
+    <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🤝</div>
+            <h3 style="font-size: 1.35rem; font-weight: 700; color: var(--secondary); margin-bottom: 0.5rem;">
+                Food Seekers
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">
+                Designed for NGOs, shelter homes, community volunteers, charity organizers, or anyone in need of edible surplus food.
+            </p>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                <li>✔️ Real-time search and filter by location and food type</li>
+                <li>✔️ Instant 1-click claim with atomic MongoDB safety</li>
+                <li>✔️ Direct pickup coordination with provider contacts</li>
+            </ul>
+        </div>
+        <a href="{% url 'signup' %}" class="btn btn-primary btn-full">Register as Seeker</a>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="card" style="margin-top: 2rem; background: #ffffff;">
+    <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--secondary); text-align: center; margin-bottom: 1.5rem;">
+        How The System Works
+    </h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; text-align: center;">
+        <div>
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">1️⃣</div>
+            <h4 style="font-weight: 700; margin-bottom: 0.25rem;">Unified Account</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Sign up once and switch between Provider & Seeker modes on your dashboard.</p>
+        </div>
+        <div>
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">2️⃣</div>
+            <h4 style="font-weight: 700; margin-bottom: 0.25rem;">Post or Browse</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Providers post details; Seekers browse and filter available surplus food.</p>
+        </div>
+        <div>
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">3️⃣</div>
+            <h4 style="font-weight: 700; margin-bottom: 0.25rem;">Claim & Coordinate</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Seeker claims an item; provider and seeker details are shared for pickup.</p>
+        </div>
+        <div>
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">4️⃣</div>
+            <h4 style="font-weight: 700; margin-bottom: 0.25rem;">Collect & Rescue</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Food is collected and marked as rescued. Zero food waste accomplished!</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}My Food Listings - Food Rescue Management System{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--secondary);">📦 My Food Listings</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+            All surplus food donations you have posted on the platform.
+        </p>
+    </div>
+    <a href="{% url 'add_food' %}" class="btn btn-primary">➕ Post New Food Listing</a>
+</div>
+
+{% if listings %}
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Food Item</th>
+                    <th>Category / Type</th>
+                    <th>Quantity</th>
+                    <th>Pickup Window</th>
+                    <th>Status</th>
+                    <th>Claimed By</th>
+                    <th>Posted On</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in listings %}
+                    <tr>
+                        <td>
+                            <strong>{{ item.title }}</strong>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">
+                                📍 {{ item.pickup_city|default:item.pickup_address }}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-category">{{ item.category }}</span>
+                            {% if item.food_type == 'Vegetarian' %}
+                                <span class="badge badge-veg">Veg</span>
+                            {% elif item.food_type == 'Non-Vegetarian' %}
+                                <span class="badge badge-nonveg">Non-Veg</span>
+                            {% else %}
+                                <span class="badge badge-vegan">Vegan</span>
+                            {% endif %}
+                        </td>
+                        <td><strong>{{ item.quantity }}</strong></td>
+                        <td style="font-size: 0.85rem;">
+                            {{ item.pickup_time_slot }}
+                        </td>
+                        <td>
+                            {% if item.status == 'available' %}
+                                <span class="badge badge-available">Available</span>
+                            {% elif item.status == 'claimed' %}
+                                <span class="badge badge-claimed">Claimed (Pending Pickup)</span>
+                            {% elif item.status == 'collected' %}
+                                <span class="badge badge-collected">Collected / Rescued</span>
+                            {% else %}
+                                <span class="badge badge-cancelled">{{ item.status|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.claimed_by_name %}
+                                <strong>{{ item.claimed_by_name }}</strong>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">
+                                    📞 <a href="tel:{{ item.claimed_by_phone }}">{{ item.claimed_by_phone }}</a>
+                                </div>
+                                {% if item.claim_notes %}
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">
+                                        Note: {{ item.claim_notes|truncatechars:35 }}
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: var(--text-light);">&mdash;</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size: 0.85rem; color: var(--text-muted);">
+                            {{ item.created_at|date:"M d, Y" }}
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.35rem; align-items: center;">
+                                <a href="{% url 'food_detail' item.id %}" class="btn btn-sm btn-outline">View</a>
+
+                                {% if item.status == 'claimed' %}
+                                    <form method="POST" action="{% url 'mark_collected' item.id %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-primary" title="Confirm Handover">
+                                            Mark Collected
+                                        </button>
+                                    </form>
+                                {% endif %}
+
+                                {% if item.status == 'available' %}
+                                    <form method="POST" action="{% url 'cancel_food' item.id %}" style="display: inline;" 
+                                          onsubmit="return confirm('Are you sure you want to cancel this listing?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline" style="color: var(--danger); border-color: #fecaca;" title="Cancel Listing">
+                                            Cancel
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="empty-state">
+        <span class="empty-state-icon">📦</span>
+        <div class="empty-state-title">No Food Listings Found</div>
+        <p class="empty-state-desc">You have not posted any surplus food listings yet. Every rescued meal makes an impact!</p>
+        <a href="{% url 'add_food' %}" class="btn btn-primary">➕ Post Your First Food Listing</a>
+    </div>
+{% endif %}
+{% endblock %}

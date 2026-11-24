@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ item.title }} - Food Rescue Management System{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+    <a href="{% url 'view_food' %}" class="btn btn-sm btn-outline">&larr; Back to Food Listings</a>
+</div>
+
+<div class="detail-layout">
+    <!-- Left Column: Detailed Food Information -->
+    <div>
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                <div>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        <span class="badge badge-category">{{ item.category }}</span>
+                        {% if item.food_type == 'Vegetarian' %}
+                            <span class="badge badge-veg">Vegetarian</span>
+                        {% elif item.food_type == 'Non-Vegetarian' %}
+                            <span class="badge badge-nonveg">Non-Vegetarian</span>
+                        {% else %}
+                            <span class="badge badge-vegan">Vegan</span>
+                        {% endif %}
+                        <span class="badge badge-qty">{{ item.quantity }}</span>
+                    </div>
+                    <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--secondary); line-height: 1.25;">
+                        {{ item.title }}
+                    </h1>
+                </div>
+
+                <div>
+                    {% if item.status == 'available' %}
+                        <span class="badge badge-available" style="font-size: 0.85rem; padding: 0.4rem 0.85rem;">Available</span>
+                    {% elif item.status == 'claimed' %}
+                        <span class="badge badge-claimed" style="font-size: 0.85rem; padding: 0.4rem 0.85rem;">Claimed (Pending Pickup)</span>
+                    {% elif item.status == 'collected' %}
+                        <span class="badge badge-collected" style="font-size: 0.85rem; padding: 0.4rem 0.85rem;">Successfully Rescued</span>
+                    {% else %}
+                        <span class="badge badge-cancelled" style="font-size: 0.85rem; padding: 0.4rem 0.85rem;">{{ item.status|title }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="detail-section">
+                <h3 class="detail-section-title">Description & Preparation</h3>
+                <p style="color: var(--text-main); font-size: 0.95rem; line-height: 1.6; white-space: pre-line;">
+                    {{ item.description|default:"Surplus food ready for collection. Fresh and safely packed." }}
+                </p>
+            </div>
+
+            <!-- Pickup Details Grid -->
+            <div class="detail-section">
+                <h3 class="detail-section-title">Pickup & Logistics</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; font-size: 0.9rem;">
+                    <div style="background: var(--bg-page); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                        <strong style="color: var(--text-muted); display: block; font-size: 0.8rem; text-transform: uppercase;">Pickup Address</strong>
+                        <div style="font-weight: 600; margin-top: 0.25rem;">{{ item.pickup_address }}</div>
+                        {% if item.pickup_city %}
+                            <div style="color: var(--text-muted); font-size: 0.85rem;">{{ item.pickup_city }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div style="background: var(--bg-page); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                        <strong style="color: var(--text-muted); display: block; font-size: 0.8rem; text-transform: uppercase;">Pickup Time Window</strong>
+                        <div style="font-weight: 600; margin-top: 0.25rem;">{{ item.pickup_time_slot }}</div>
+                    </div>
+
+                    <div style="background: var(--bg-page); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                        <strong style="color: var(--text-muted); display: block; font-size: 0.8rem; text-transform: uppercase;">Best Before / Expiry</strong>
+                        <div style="font-weight: 600; margin-top: 0.25rem; color: #b45309;">{{ item.expiry_info }}</div>
+                    </div>
+
+                    <div style="background: var(--bg-page); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                        <strong style="color: var(--text-muted); display: block; font-size: 0.8rem; text-transform: uppercase;">Posted Date</strong>
+                        <div style="font-weight: 600; margin-top: 0.25rem;">{{ item.created_at|date:"M d, Y, h:i A" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Provider Contact Card -->
+        <div class="card">
+            <h3 class="detail-section-title">Food Provider Details</h3>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div style="font-size: 2.2rem; background: var(--primary-light); width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md);">
+                    🍲
+                </div>
+                <div>
+                    <h4 style="font-size: 1.1rem; color: var(--secondary);">{{ item.provider_name }}</h4>
+                    <div style="font-size: 0.9rem; color: var(--text-muted);">
+                        Contact Person: <strong>{{ item.contact_person|default:item.provider_name }}</strong>
+                    </div>
+                    {% if item.contact_phone %}
+                        <div style="font-size: 0.9rem; color: var(--text-main); margin-top: 0.2rem;">
+                            📞 Phone: <a href="tel:{{ item.contact_phone }}" style="font-weight: 700;">{{ item.contact_phone }}</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Status & Action Sidebar -->
+    <div>
+        <div class="card" style="position: sticky; top: 80px;">
+            <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--secondary); margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+                Rescue Action
+            </h3>
+
+            {% if item.status == 'available' %}
+                {% if request.session.user_id %}
+                    {% if is_owner %}
+                        <!-- Provider's own listing -->
+                        <div style="background: var(--secondary-light); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem; font-size: 0.9rem;">
+                            ℹ️ You listed this item. Once a seeker claims it, their contact info will appear here.
+                        </div>
+                        <form method="POST" action="{% url 'cancel_food' item.id %}" onsubmit="return confirm('Are you sure you want to cancel this listing?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-full">Cancel Food Listing</button>
+                        </form>
+                    {% else %}
+                        <!-- Seeker claiming available food -->
+                        <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                            Are you or your organization able to pick up this food within the specified window?
+                        </div>
+                        <form method="POST" action="{% url 'claim_food' item.id %}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label class="form-label" for="claim_notes">Pickup Note / Vehicle Details (Optional)</label>
+                                <textarea class="form-control" id="claim_notes" name="claim_notes" rows="2" 
+                                          placeholder="e.g. Coming with a 4-wheeler at 6:30 PM"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-lg btn-full" onclick="return confirm('Confirm claiming this food item for pickup?');">
+                                🤝 Claim This Food
+                            </button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <!-- Guest user prompt -->
+                    <div style="text-align: center; padding: 1rem 0;">
+                        <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+                            You must be logged in to claim and rescue this food.
+                        </p>
+                        <a href="{% url 'login' %}?next={% url 'food_detail' item.id %}" class="btn btn-primary btn-full" style="margin-bottom: 0.5rem;">
+                            Sign In to Claim
+                        </a>
+                        <a href="{% url 'signup' %}" class="btn btn-outline btn-full">
+                            Create Account
+                        </a>
+                    </div>
+                {% endif %}
+
+            {% elif item.status == 'claimed' %}
+                <!-- Item is currently claimed -->
+                <div style="background: var(--warning-bg); border-left: 4px solid var(--warning); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; font-size: 0.9rem; color: #78350f;">
+                    <strong>Item Claimed & Pending Pickup</strong>
+                    <div style="margin-top: 0.4rem;">
+                        Claimed by: <strong>{{ item.claimed_by_name }}</strong>
+                    </div>
+                    {% if item.claimed_by_phone %}
+                        <div>Seeker Phone: <strong>{{ item.claimed_by_phone }}</strong></div>
+                    {% endif %}
+                    {% if item.claim_notes %}
+                        <div style="margin-top: 0.35rem; font-style: italic;">"{{ item.claim_notes }}"</div>
+                    {% endif %}
+                </div>
+
+                {% if is_owner or is_claimed_by_me %}
+                    <form method="POST" action="{% url 'mark_collected' item.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary btn-lg btn-full" onclick="return confirm('Confirm that pickup is completed and food is rescued?');">
+                            ✅ Confirm Pickup / Mark Collected
+                        </button>
+                    </form>
+                {% else %}
+                    <div style="color: var(--text-muted); font-size: 0.9rem; text-align: center;">
+                        This item has already been claimed by another seeker.
+                    </div>
+                {% endif %}
+
+            {% elif item.status == 'collected' %}
+                <!-- Food successfully collected -->
+                <div style="background: var(--success-bg); border-left: 4px solid var(--success); padding: 1rem; border-radius: var(--radius-md); text-align: center; color: #14532d;">
+                    <div style="font-size: 2rem; margin-bottom: 0.25rem;">🎉</div>
+                    <strong>Food Successfully Rescued!</strong>
+                    <p style="font-size: 0.85rem; margin-top: 0.35rem;">
+                        This surplus food was collected and prevented from going to waste.
+                    </p>
+                </div>
+
+            {% elif item.status == 'cancelled' %}
+                <div style="background: #f1f5f9; padding: 1rem; border-radius: var(--radius-md); text-align: center; color: #64748b;">
+                    <strong>Listing Cancelled</strong>
+                    <p style="font-size: 0.85rem; margin-top: 0.25rem;">This food listing is no longer active.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

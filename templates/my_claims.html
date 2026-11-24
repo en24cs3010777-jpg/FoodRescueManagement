@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}My Food Claims - Food Rescue Management System{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--secondary);">🤝 My Claimed Food</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+            Food donations you have claimed for rescue and community distribution.
+        </p>
+    </div>
+    <a href="{% url 'view_food' %}" class="btn btn-primary">🔍 Find More Available Food</a>
+</div>
+
+{% if claims %}
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Food Item</th>
+                    <th>Quantity</th>
+                    <th>Pickup Address</th>
+                    <th>Pickup Window</th>
+                    <th>Provider Contact</th>
+                    <th>Status</th>
+                    <th>Claimed Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in claims %}
+                    <tr>
+                        <td>
+                            <strong>{{ item.title }}</strong>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">
+                                {{ item.category }} &bull; {{ item.food_type }}
+                            </div>
+                        </td>
+                        <td><strong>{{ item.quantity }}</strong></td>
+                        <td style="font-size: 0.85rem;">
+                            {{ item.pickup_address }}
+                            {% if item.pickup_city %}
+                                <div style="color: var(--text-muted);">{{ item.pickup_city }}</div>
+                            {% endif %}
+                        </td>
+                        <td style="font-size: 0.85rem;">
+                            {{ item.pickup_time_slot }}
+                        </td>
+                        <td>
+                            <strong>{{ item.provider_name }}</strong>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">
+                                📞 <a href="tel:{{ item.provider_phone }}">{{ item.provider_phone }}</a>
+                            </div>
+                        </td>
+                        <td>
+                            {% if item.status == 'claimed' %}
+                                <span class="badge badge-claimed">Pending Pickup</span>
+                            {% elif item.status == 'collected' %}
+                                <span class="badge badge-collected">Collected & Rescued</span>
+                            {% else %}
+                                <span class="badge badge-cancelled">{{ item.status|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size: 0.85rem; color: var(--text-muted);">
+                            {{ item.claimed_at|date:"M d, Y" }}
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.35rem; align-items: center;">
+                                <a href="{% url 'food_detail' item.id %}" class="btn btn-sm btn-outline">Details</a>
+                                {% if item.status == 'claimed' %}
+                                    <form method="POST" action="{% url 'mark_collected' item.id %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Confirm that you have picked up this food?');">
+                                            Confirm Pickup
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="empty-state">
+        <span class="empty-state-icon">🤝</span>
+        <div class="empty-state-title">No Claimed Food Yet</div>
+        <p class="empty-state-desc">You have not claimed any surplus food items yet. Browse available food donations and claim meals to feed people in need.</p>
+        <a href="{% url 'view_food' %}" class="btn btn-primary">🔍 Browse Available Food</a>
+    </div>
+{% endif %}
+{% endblock %}
